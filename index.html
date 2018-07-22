@@ -29,6 +29,9 @@
             background: black;
             color: #fff;
         }
+        .ctrl{
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -37,12 +40,18 @@
             <img src="1.png" alt="">
             <img src="2.png" alt="">
             <img src="3.png" alt="">
+            <img src="4.png" alt="">
         </div>
+    </div>
+    <div class="ctrl">
+        <span class="prev">上一张</span>  
+        <span class="next">下一张</span>
     </div>
     <div class="btn-wrapper">
         <span>1</span>
         <span>2</span>
-        <span>3</span>      
+        <span>3</span>
+        <span>4</span>      
     </div>
 
     <script>
@@ -51,6 +60,8 @@
         var $img = $imgList.children();
         //current用来记录当前所在位置
         var current = 0;
+
+        var timer = null;
         
         //默认初始位置
         $('.img-box').css({'transform':'translateX(-400px)'}) 
@@ -58,7 +69,39 @@
         makeFakeSlides();
         
         bindEvents();
-        
+
+        $('.ctrl .prev').on('click',function(){
+            //当前所在的索引值减去1就是上一张
+            goToSlide(current-1)
+        })
+
+        $('.ctrl .next').on('click',function(){
+            //比如说现在默认当前索引值current是0，当点击下一张也就是索引值为1，所以就是current+1
+            goToSlide(current+1)
+        })
+
+        timer = setInterval(()=>{
+            goToSlide(current+1);
+        },2000)
+
+        $('.box').on('mouseenter',function(){
+            clearInterval(timer);
+        }).on('mouseleave',function(){
+            timer = setInterval(()=>{
+                goToSlide(current+1);
+            },2000)
+        })
+
+        document.addEventListener('visibilitychange',function(e){
+            if(document.hidden){
+                clearInterval(timer)
+            }else{
+                timer = setInterval(()=>{
+                    goToSlide(current+1);
+                },2000)
+            }
+        })
+
         function makeFakeSlides(){
             //克隆第一张图片加到最后面
             var $firstImg = $('.img-box img').eq(0).clone(true);
@@ -70,51 +113,46 @@
         }
 
         function bindEvents(){
-            $btn.eq(0).on('click',function(){
-                //这里打印的current是点击按钮之前所在位置的索引值
-                console.log(current)
-                //如果current的值是2说明点击按钮之前他是在索引值为2的地方也就是最后一张图的地方（如果从最后一张跳到第一张）
-                if(current===2){
-                    //原则：先滚动到克隆的那一张（离他最近的那一个），因为是从最后一张到第一张，所以就是先滚动到克隆的那个第一张，也就是translateX(-1600px)的位置
-                    //当滚动到克隆的第一张的时候，直接变成原有的第一张，所以用one来监听transition是否结束
-                    $('.img-box').css({'transform':'translateX(-1600px)'}).one('transitionend',function(){
-                        //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
-                        $('.img-box').hide().offset()
-                        $('.img-box').css({'transform':'translateX(-400px)'}) 
-                        $('.img-box').show()
-                    })
-                }else{
-                    //因为上面克隆了两张图片，现在的图片显示是3,1,2,3,1，第一张是第三张的图片，而要得到第一张的就要translateX(-400px)
-                    $('.img-box').css({'transform':'translateX(-400px)'})
-                }
-
-                //当前按钮对应的图片的索引值
-                current = 0;
-            })
-            $btn.eq(1).on('click',function(){
-
-                $('.img-box').css({'transform':'translateX(-800px)'})
-                current = 1;
-            })
-            $btn.eq(2).on('click',function(){
-                //如果是从第一张跳到最后一张
-                if(current === 0){
-                    //原则：先滚动到克隆的那一张（离他最近的那一个），因为是从第一张到最后一张，所以就是先滚动到克隆的那个最后一张，也就是translateX(0)的位置
-                    $('.img-box').css({'transform':'translateX(0)'}).one('transitionend',function(){
-                        //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
-                        $('.img-box').hide().offset()
-                        //transitionend结束后滚动到本来的最后一张的位置
-                        $('.img-box').css({'transform':'translateX(-1200px)'}) 
-                        $('.img-box').show()
-                    })
-                }else{
-                    $('.img-box').css({'transform':'translateX(-1200px)'})
-                }
-                current = 2;
-            })
+            $btn.on('click',function(e){
+                //被点击的索引值
+               var index = $(e.currentTarget).index();
+               goToSlide(index);
+              
+            })     
         }
         
-        
+        function goToSlide(index){
+            if(index<0){
+                //当索引值小于0是也就是回到它的最后一张$img.length-1
+                index=$img.length-1;
+            }else if(index>$img.length-1){
+                //当索引值超出图片的长度-1时，就让它从0重新开始
+                index = 0;
+            }
+            //说明当前在索引值为0的位置，点击了最后一张，也就是从第一张跳到最后一张
+            if(current === 0 && index === $img.length-1){
+                $('.img-box').css({'transform':'translateX(0px)'}).one('transitionend',function(){
+                    //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
+                    $('.img-box').hide().offset()
+                    //transitionend结束后滚动到本来的最后一张的位置
+                    $('.img-box').css({'transform':'translateX('+((index+1)*(-400))+'px)'}) 
+                    $('.img-box').show()
+                })
+            }else if(current === $img.length-1 && index===0){
+                console.log('1')
+                //由最后一张跳到第一张,也就是当前是最后一张，点击了第一张
+                $('.img-box').css({'transform':'translateX('+(($img.length+1)*(-400))+'px)'}).one('transitionend',function(){
+                     //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
+                     $('.img-box').hide().offset()
+                     $('.img-box').css({'transform':'translateX('+((index+1)*(-400))+'px)'}) 
+                     $('.img-box').show()
+                 })
+            }else{
+                $('.img-box').css({'transform':'translateX('+((index+1)*(-400))+'px)'})
+            }
+            //点击完后，当前的索引值就等于你点击的那个索引值
+            current = index;
+        }
 
         
     </script>
