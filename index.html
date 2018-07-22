@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>改进版无缝滚动</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .img-box{
+            display: flex;
+            transition: all .3s linear;
+        }
+        .box{
+            width: 400px;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+        .btn-wrapper{
+            text-align: center;
+        }
+        .btn-wrapper span{
+            display: inline-block;
+            padding: 20px;
+            background: black;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="img-box">
+            <img src="1.png" alt="">
+            <img src="2.png" alt="">
+            <img src="3.png" alt="">
+        </div>
+    </div>
+    <div class="btn-wrapper">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>      
+    </div>
+
+    <script>
+        var $btn = $('.btn-wrapper span');
+        var $imgList = $('.img-box');
+        var $img = $imgList.children();
+
+        //克隆第一张图片加到最后面
+        var $firstImg = $('.img-box img').eq(0).clone(true);
+        $imgList.append($firstImg);
+        
+        //克隆最后一张图片加到最前面
+        var $lastImg = $('.img-box img').eq($img.length-1).clone(true);
+        $imgList.prepend($lastImg);
+        
+        //current用来记录当前所在位置
+        var current = 0;
+        
+        //默认初始位置
+        $('.img-box').css({'transform':'translateX(-400px)'}) 
+
+        $btn.eq(0).on('click',function(){
+            //这里打印的current是点击按钮之前所在位置的索引值
+            console.log(current)
+            //如果current的值是2说明点击按钮之前他是在索引值为2的地方也就是最后一张图的地方（如果从最后一张跳到第一张）
+            if(current===2){
+                //原则：先滚动到克隆的那一张（离他最近的那一个），因为是从最后一张到第一张，所以就是先滚动到克隆的那个第一张，也就是translateX(-1600px)的位置
+                //当滚动到克隆的第一张的时候，直接变成原有的第一张，所以用one来监听transition是否结束
+                $('.img-box').css({'transform':'translateX(-1600px)'}).one('transitionend',function(){
+                    //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
+                    $('.img-box').hide().offset()
+                    $('.img-box').css({'transform':'translateX(-400px)'}) 
+                    $('.img-box').show()
+                })
+            }else{
+                //因为上面克隆了两张图片，现在的图片显示是3,1,2,3,1，第一张是第三张的图片，而要得到第一张的就要translateX(-400px)
+                $('.img-box').css({'transform':'translateX(-400px)'})
+            }
+            
+            //当前按钮对应的图片的索引值
+            current = 0;
+        })
+        $btn.eq(1).on('click',function(){
+            
+            $('.img-box').css({'transform':'translateX(-800px)'})
+            current = 1;
+        })
+        $btn.eq(2).on('click',function(){
+            //如果是从第一张跳到最后一张
+            if(current === 0){
+                //原则：先滚动到克隆的那一张（离他最近的那一个），因为是从第一张到最后一张，所以就是先滚动到克隆的那个最后一张，也就是translateX(0)的位置
+                $('.img-box').css({'transform':'translateX(0)'}).one('transitionend',function(){
+                    //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
+                    $('.img-box').hide().offset()
+                    //transitionend结束后滚动到本来的最后一张的位置
+                    $('.img-box').css({'transform':'translateX(-1200px)'}) 
+                    $('.img-box').show()
+                })
+            }else{
+                $('.img-box').css({'transform':'translateX(-1200px)'})
+            }
+            current = 2;
+        })
+    </script>
+</body>
+</html>
