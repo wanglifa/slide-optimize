@@ -131,6 +131,7 @@
             }
             //说明当前在索引值为0的位置，点击了最后一张，也就是从第一张跳到最后一张
             if(current === 0 && index === $img.length-1){
+                //先跳到离他最近的最后一张（克隆的那张）
                 $('.img-box').css({'transform':'translateX(0px)'}).one('transitionend',function(){
                     //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
                     $('.img-box').hide().offset()
@@ -141,9 +142,11 @@
             }else if(current === $img.length-1 && index===0){
                 console.log('1')
                 //由最后一张跳到第一张,也就是当前是最后一张，点击了第一张
+                //先跳到离他最近的按个第一张（克隆的第一张）
                 $('.img-box').css({'transform':'translateX('+(($img.length+1)*(-400))+'px)'}).one('transitionend',function(){
                      //之所以先隐藏再显示是为了让你看不到过渡动画，加offset就能帮着实现
                      $('.img-box').hide().offset()
+                    //跳过去后直接变成真正的第一张（本来就有的那个）
                      $('.img-box').css({'transform':'translateX('+((index+1)*(-400))+'px)'}) 
                      $('.img-box').show()
                  })
