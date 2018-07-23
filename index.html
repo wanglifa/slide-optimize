@@ -71,7 +71,7 @@
         bindEvents();
 
         $('.ctrl .prev').on('click',function(){
-            //当前所在的索引值减去1就是上一张
+            //当前所在的索引值减去1就是上一张（一共四张，比如当前是在索引值为0也就是第1张的位置，当点击上一张就应该是索引值为3，也就是第四张的位置）
             goToSlide(current-1)
         })
 
@@ -123,7 +123,8 @@
         
         function goToSlide(index){
             if(index<0){
-                //当索引值小于0是也就是回到它的最后一张$img.length-1
+                //当索引值小于0是也就是回到它的最后一张$img.length-1，就比如说上面的点击上一张，如果当前在索引值为0的位置，
+                //那么点击上一张current-1是-1，而实际上应该是3，也就是最后一张的索引值
                 index=$img.length-1;
             }else if(index>$img.length-1){
                 //当索引值超出图片的长度-1时，就让它从0重新开始
